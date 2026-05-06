@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/theme/theme.dart';
+import 'package:split_spend/src/features/onboarding/widgets/onboarding_footer.dart';
 
 class PageViewThree extends StatelessWidget {
   const PageViewThree({super.key});
@@ -56,32 +57,7 @@ class PageViewThree extends StatelessWidget {
               onPressed: () {},
               child: const Text('Get Started'),
             ),
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Already have an account?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: AppPalette.neutral500,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'Sign in',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: AppPalette.primary500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const OnboardingFooter(),
           ],
         ),
       ),
