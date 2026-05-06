@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/app/main_shell.dart';
-import 'package:split_spend/src/core/config/app_config.dart';
 import 'package:split_spend/src/features/auth/screens/signin_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -9,9 +8,6 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kBypassAuthForUi) {
-      return const MainShell();
-    }
     return StreamBuilder<AuthState>(
       stream: Supabase.instance.client.auth.onAuthStateChange,
       builder: (context, snapshot) {

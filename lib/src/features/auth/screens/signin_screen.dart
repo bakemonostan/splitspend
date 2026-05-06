@@ -13,7 +13,10 @@ import 'package:split_spend/src/theme/theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SigninScreen extends StatefulWidget {
-  const SigninScreen({super.key});
+  const SigninScreen({super.key, this.onSignedInFromOnboarding});
+
+  /// When sign-in is opened from onboarding, finish onboarding after success.
+  final VoidCallback? onSignedInFromOnboarding;
 
   @override
   State<SigninScreen> createState() => _SigninScreenState();
@@ -47,8 +50,12 @@ class _SigninScreenState extends State<SigninScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      // No BuildContext needed; show even if AuthGate swaps to Home immediately.
       await AppToast.success('Signed in successfully.');
+      if (!mounted) return;
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      widget.onSignedInFromOnboarding?.call();
     } on AuthException catch (e) {
       await AppToast.error(e.message);
     } catch (e) {
@@ -77,7 +84,7 @@ class _SigninScreenState extends State<SigninScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppPalette.primary50,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

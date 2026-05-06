@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/features/activity/activity_screen.dart';
+import 'package:split_spend/src/features/groups/screens/create_group_screen.dart';
+import 'package:split_spend/src/features/groups/screens/groups_screen.dart';
 import 'package:split_spend/src/features/home/screens/home_screen.dart';
 import 'package:split_spend/src/features/home/widgets/home_app_bar.dart';
 import 'package:split_spend/src/features/settings/screens/settings_screen.dart';
@@ -16,15 +18,33 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _index = 0;
 
+  /// Bumped after a group is created from the FAB so [GroupsScreen] reloads.
+  final ValueNotifier<int> _groupsRefreshSignal = ValueNotifier<int>(0);
+
   static const _activityTitle = 'Activity';
+
+  @override
+  void dispose() {
+    _groupsRefreshSignal.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openCreateGroup() async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const CreateGroupScreen()),
+    );
+    if (created == true && mounted) {
+      _groupsRefreshSignal.value++;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9F9),
-      appBar: _index == 0
+      appBar: _index == 0 || _index == 1
           ? const HomeAppBar()
-          : _index == 2
+          : _index == 3
           ? const SettingsAppBar()
           : AppBar(
               backgroundColor: Colors.white,
@@ -41,15 +61,16 @@ class _MainShellState extends State<MainShell> {
             ),
       body: IndexedStack(
         index: _index,
-        children: const [
-          HomeScreen(),
-          ActivityScreen(),
-          SettingsScreen(),
+        children: [
+          HomeScreen(groupsRefreshSignal: _groupsRefreshSignal),
+          GroupsScreen(refreshSignal: _groupsRefreshSignal),
+          const ActivityScreen(),
+          const SettingsScreen(),
         ],
       ),
-      floatingActionButton: _index == 0
+      floatingActionButton: _index == 0 || _index == 1
           ? FloatingActionButton(
-              onPressed: () {},
+              onPressed: _openCreateGroup,
               backgroundColor: AppPalette.primary500,
               foregroundColor: Colors.white,
               child: const Icon(Icons.person_add_alt_1_rounded),
@@ -87,6 +108,14 @@ class _MainShellState extends State<MainShell> {
                 color: AppPalette.primary400,
               ),
               label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.groups_outlined, color: AppPalette.neutral500),
+              selectedIcon: Icon(
+                Icons.groups_rounded,
+                color: AppPalette.primary500,
+              ),
+              label: 'Groups',
             ),
             NavigationDestination(
               icon: Icon(Icons.article_outlined, color: AppPalette.neutral500),

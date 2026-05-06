@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:split_spend/src/app/app_flow_controller.dart';
+import 'package:split_spend/src/core/config/app_version.dart';
 import 'package:split_spend/src/core/storage/avatar_storage_service.dart';
 import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/settings/widgets/settings_group_card.dart';
@@ -40,7 +42,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await AvatarStorageService.uploadProfilePhoto(x);
       if (mounted) await AppToast.success('Profile photo updated.');
     } catch (e) {
-      if (mounted) await AppToast.error(e.toString());
+      if (!mounted) return;
+      final msg = e.toString();
+      final friendly = msg.contains('DatabaseInvalidObjectDefinition') ||
+              msg.contains('infinite recursion')
+          ? 'Could not reach storage. Try again — if it persists, check Supabase status.'
+          : 'Could not update photo.';
+      await AppToast.error(friendly);
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -48,21 +56,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _logout() async {
     await Supabase.instance.client.auth.signOut();
-    if (mounted) await AppToast.info('Signed out.');
+    AppFlowController.instance.returnToOnboarding();
+    if (mounted) await AppToast.info('Signed out. See you on the tour.');
   }
 
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFFF8F9F9),
+      color: AppColors.background,
       child: StreamBuilder<AuthState>(
         stream: Supabase.instance.client.auth.onAuthStateChange,
         builder: (context, snapshot) {
           final user = Supabase.instance.client.auth.currentUser;
-          final name = AvatarStorageService.displayNameFromUser(user) ??
-              (user == null ? 'Guest' : 'Account');
+          final name = user == null
+              ? '—'
+              : AvatarStorageService.resolvedDisplayName(user);
           final email = AvatarStorageService.emailFromUser(user) ?? '—';
           final avatarUrl = AvatarStorageService.avatarUrlFromUser(user);
+          final currency =
+              AvatarStorageService.currencyLabelFromUser(user);
+          final notificationsOn =
+              AvatarStorageService.notificationsEnabledFromUser(user);
+          final passwordHint =
+              AvatarStorageService.passwordSectionSubtitleFromUser(user);
 
           return CustomScrollView(
             slivers: [
@@ -101,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         SettingsNavigationTile(
                           icon: Icons.payments_outlined,
                           title: 'Currency',
-                          subtitle: 'USD (\$)',
+                          subtitle: currency,
                           onTap: () {},
                         ),
                         _tileDivider(),
@@ -124,14 +140,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           subtitle: Text(
-                            'Enabled',
+                            notificationsOn ? 'Enabled' : 'Disabled',
                             style: TextStyle(
                               fontSize: 13,
                               color: AppPalette.neutral500,
                             ),
                           ),
                           trailing: Switch(
-                            value: true,
+                            value: notificationsOn,
                             onChanged: null,
                             activeThumbColor: AppPalette.primary500,
                           ),
@@ -144,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         SettingsNavigationTile(
                           icon: Icons.lock_outline_rounded,
                           title: 'Change Password',
-                          subtitle: 'Last changed 3 months ago',
+                          subtitle: passwordHint,
                           onTap: () {},
                         ),
                       ],
@@ -174,7 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'SplitSpend v1.0.0 (Build 1)',
+                      AppVersion.label,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:split_spend/src/app/app_flow_controller.dart';
 import 'package:split_spend/src/features/auth/screens/signin_screen.dart';
 import 'package:split_spend/src/theme/theme.dart';
 
@@ -22,9 +23,14 @@ class OnboardingFooter extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(
+              Navigator.push<void>(
                 context,
-                MaterialPageRoute(builder: (context) => SigninScreen()),
+                MaterialPageRoute<void>(
+                  builder: (context) => SigninScreen(
+                    onSignedInFromOnboarding:
+                        AppFlowController.instance.completeOnboarding,
+                  ),
+                ),
               );
             },
             child: Text(

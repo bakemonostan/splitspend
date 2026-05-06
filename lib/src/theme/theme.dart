@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AppPalette {
   // Primary (#0F766E)
   static const Color primary10 = Color(0xFFF1F2F2);
+  static const Color primary30 = Color(0xFFF8F9F9);
   static const Color primary50 = Color(0xFFE6F4F2);
   static const Color primary100 = Color(0xFFCEEAE7);
   static const Color primary200 = Color(0xFF9DD5CF);
@@ -57,6 +58,8 @@ class AppColors {
   static const Color secondary = AppPalette.secondary500;
   static const Color tertiary = AppPalette.tertiary500;
   static const Color neutral = AppPalette.neutral500;
+  // f7faf8
+  static const Color background = Color(0xFFF7FAF8);
 }
 
 ThemeData primaryTheme = ThemeData(

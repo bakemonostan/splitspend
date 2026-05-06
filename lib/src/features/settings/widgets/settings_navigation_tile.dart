@@ -26,7 +26,7 @@ class SettingsNavigationTile extends StatelessWidget {
         title,
         style: const TextStyle(
           fontWeight: FontWeight.w600,
-          fontSize: 15,
+          fontSize: 14,
           color: AppPalette.neutral900,
         ),
       ),
@@ -34,14 +34,14 @@ class SettingsNavigationTile extends StatelessWidget {
           ? Text(
               subtitle!,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 color: AppPalette.neutral500,
               ),
             )
           : null,
       trailing:
           trailing ??
-          Icon(Icons.chevron_right, color: AppPalette.neutral400, size: 22),
+          Icon(Icons.chevron_right, color: AppPalette.neutral200, size: 20),
       onTap: onTap,
     );
   }

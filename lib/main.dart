@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:split_spend/src/app/main_shell.dart';
+import 'package:split_spend/src/app/app_root.dart';
 import 'package:split_spend/src/app/missing_supabase_config_screen.dart';
 import 'package:split_spend/src/core/config/supabase_env.dart';
-import 'package:split_spend/src/features/onboarding/widgets/pageview_builder.dart';
 import 'package:split_spend/src/theme/theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -28,17 +27,7 @@ class SplitSpendApp extends StatelessWidget {
       title: 'SplitSpend',
       theme: primaryTheme,
       home: SupabaseEnv.isConfigured
-          ? Builder(
-              builder: (context) => PageViewBuilder(
-                onFinished: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const MainShell(),
-                    ),
-                  );
-                },
-              ),
-            )
+          ? const AppRoot()
           : const MissingSupabaseConfigScreen(),
     );
   }

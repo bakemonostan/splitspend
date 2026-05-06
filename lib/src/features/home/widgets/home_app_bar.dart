@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/theme/theme.dart';
+import 'package:split_spend/src/widgets/profile_toolbar_avatar.dart';
 
 /// Home tab app bar: avatar (leading), centered **SplitSpend**, bell action.
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -18,17 +19,9 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
       leading: Padding(
         padding: const EdgeInsets.only(left: 4),
-        child: IconButton(
+        child: ProfileToolbarAvatar(
+          radius: 18,
           onPressed: () {},
-          icon: CircleAvatar(
-            radius: 18,
-            backgroundColor: AppPalette.primary100,
-            child: Icon(
-              Icons.person_rounded,
-              color: AppPalette.primary600,
-              size: 22,
-            ),
-          ),
         ),
       ),
       title: Image.asset(

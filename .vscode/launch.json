@@ -6,7 +6,10 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "toolArgs": [
+        "--dart-define-from-file=dart_defines.local.json"
+      ]
     },
     {
       "name": "Attach to Flutter (after terminal flutter run)",

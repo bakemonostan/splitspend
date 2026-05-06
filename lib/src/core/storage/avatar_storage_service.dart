@@ -54,5 +54,46 @@ abstract final class AvatarStorageService {
       user?.userMetadata?['full_name'] as String? ??
       user?.userMetadata?['name'] as String?;
 
+  /// Falls back to email local-part, then a generic label.
+  static String resolvedDisplayName(User? user) {
+    final n = displayNameFromUser(user);
+    if (n != null && n.trim().isNotEmpty) return n.trim();
+    final email = user?.email;
+    if (email != null && email.contains('@')) {
+      return email.split('@').first;
+    }
+    return 'Account';
+  }
+
   static String? emailFromUser(User? user) => user?.email;
+
+  /// `user_metadata.currency` or default USD label.
+  static String currencyLabelFromUser(User? user) {
+    final raw = user?.userMetadata?['currency'] as String?;
+    if (raw != null && raw.trim().isNotEmpty) return raw.trim();
+    final code = user?.userMetadata?['currency_code'] as String?;
+    if (code == 'EUR') return 'EUR (€)';
+    if (code == 'GBP') return 'GBP (£)';
+    return 'USD (\$)';
+  }
+
+  static bool notificationsEnabledFromUser(User? user) {
+    final v = user?.userMetadata?['notifications_enabled'];
+    if (v is bool) return v;
+    if (v is String) return v.toLowerCase() != 'false';
+    return true;
+  }
+
+  static String passwordSectionSubtitleFromUser(User? user) {
+    final hint = user?.userMetadata?['password_changed_hint'] as String?;
+    if (hint != null && hint.trim().isNotEmpty) return hint.trim();
+    final iso = user?.userMetadata?['password_updated_at'] as String?;
+    if (iso != null) {
+      try {
+        final d = DateTime.parse(iso);
+        return 'Last updated ${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      } catch (_) {}
+    }
+    return 'Use Change Password to update';
+  }
 }

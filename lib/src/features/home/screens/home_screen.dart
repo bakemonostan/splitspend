@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:split_spend/src/core/ui/app_toast.dart';
+import 'package:split_spend/src/features/groups/screens/create_group_screen.dart';
+import 'package:split_spend/src/features/groups/screens/join_group_screen.dart';
+import 'package:split_spend/src/features/groups/widgets/start_something_new_card.dart';
 import 'package:split_spend/src/features/home/models/group_summary.dart';
-import 'package:split_spend/src/features/home/widgets/create_group_placeholder.dart';
 import 'package:split_spend/src/features/home/widgets/group_summary_card.dart';
 import 'package:split_spend/src/features/home/widgets/home_header.dart';
 import 'package:split_spend/src/theme/theme.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.groupsRefreshSignal});
+
+  /// When create/join succeeds from Home, bump so the Groups tab reloads.
+  final ValueNotifier<int>? groupsRefreshSignal;
 
   static final List<GroupSummary> _demoGroups = [
     GroupSummary(
       name: 'Flatmates 2024',
       memberCount: 4,
       statusLabel: 'You owe',
-      amountLabel: '\$42.50',
+      amountLabel: r'$42.50',
       amountColor: const Color(0xFFDC2626),
       icon: Icons.apartment_rounded,
       iconColor: AppPalette.primary600,
@@ -21,9 +27,9 @@ class HomeScreen extends StatelessWidget {
     ),
     GroupSummary(
       name: 'Tokyo Trip',
-      memberCount: 4,
+      memberCount: 6,
       statusLabel: 'Settled',
-      amountLabel: '\$0.00',
+      amountLabel: r'$0.00',
       amountColor: const Color(0xFF16A34A),
       icon: Icons.flight_rounded,
       iconColor: const Color(0xFF2563EB),
@@ -31,9 +37,9 @@ class HomeScreen extends StatelessWidget {
     ),
     GroupSummary(
       name: 'Dinner Club',
-      memberCount: 4,
+      memberCount: 8,
       statusLabel: 'Owes you',
-      amountLabel: '\$115.20',
+      amountLabel: r'$115.20',
       amountColor: const Color(0xFF16A34A),
       icon: Icons.restaurant_rounded,
       iconColor: AppPalette.tertiary600,
@@ -41,10 +47,29 @@ class HomeScreen extends StatelessWidget {
     ),
   ];
 
+  Future<void> _openCreate(BuildContext context) async {
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const CreateGroupScreen()),
+    );
+    if (ok == true) {
+      groupsRefreshSignal?.value++;
+    }
+  }
+
+  Future<void> _openJoin(BuildContext context) async {
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const JoinGroupScreen()),
+    );
+    if (ok == true) {
+      groupsRefreshSignal?.value++;
+      await AppToast.success('Joined group');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: AppPalette.primary50,
+      color: AppColors.background,
       child: SafeArea(
         bottom: false,
         child: CustomScrollView(
@@ -62,7 +87,10 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  CreateGroupPlaceholder(onTap: () {}),
+                  StartSomethingNewCard(
+                    onCreateGroup: () => _openCreate(context),
+                    onJoinWithCode: () => _openJoin(context),
+                  ),
                   const SizedBox(height: 100),
                 ]),
               ),
