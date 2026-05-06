@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/theme/theme.dart';
 
+/// Home tab app bar: avatar (leading), centered **SplitSpend**, bell action.
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(56);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
@@ -14,28 +15,29 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      titleSpacing: 12,
-      title: Row(
-        children: [
-          CircleAvatar(
+      centerTitle: true,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: IconButton(
+          onPressed: () {},
+          icon: CircleAvatar(
             radius: 18,
             backgroundColor: AppPalette.primary100,
             child: Icon(
-              Icons.person_outline,
+              Icons.person_rounded,
               color: AppPalette.primary600,
               size: 22,
             ),
           ),
-          const SizedBox(width: 10),
-          Text(
-            'SplitSpend',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppPalette.primary500,
-            ),
-          ),
-        ],
+        ),
+      ),
+      title: Text(
+        'SplitSpend',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: AppPalette.primary500,
+        ),
       ),
       actions: [
         IconButton(
@@ -46,7 +48,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 26,
           ),
         ),
-        const SizedBox(width: 4),
       ],
     );
   }

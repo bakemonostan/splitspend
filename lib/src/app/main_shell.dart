@@ -20,7 +20,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9F9),
       appBar: _index == 0
           ? const HomeAppBar()
           : AppBar(
@@ -51,30 +51,54 @@ class _MainShellState extends State<MainShell> {
               child: const Icon(Icons.person_add_alt_1_rounded),
             )
           : null,
-      bottomNavigationBar: NavigationBar(
-        height: 64,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        indicatorColor: AppPalette.primary100,
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: AppPalette.neutral200, width: 1),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.article_outlined),
-            selectedIcon: Icon(Icons.article_rounded),
-            label: 'Activity',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Settings',
-          ),
-        ],
+          boxShadow: [
+            BoxShadow(
+              color: AppPalette.neutral900.withValues(alpha: 0.05),
+              offset: const Offset(0, -2),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: NavigationBar(
+          height: 64,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          elevation: 0,
+          indicatorColor: AppPalette.primary100,
+          selectedIndex: _index,
+          onDestinationSelected: (i) => setState(() => _index = i),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined, color: AppPalette.neutral500),
+              selectedIcon: Icon(Icons.home_rounded, color: AppPalette.primary500),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.article_outlined, color: AppPalette.neutral500),
+              selectedIcon: Icon(
+                Icons.article_rounded,
+                color: AppPalette.primary500,
+              ),
+              label: 'Activity',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined, color: AppPalette.neutral500),
+              selectedIcon: Icon(
+                Icons.settings_rounded,
+                color: AppPalette.primary500,
+              ),
+              label: 'Settings',
+            ),
+          ],
+        ),
       ),
     );
   }
