@@ -21,12 +21,20 @@ flutter run \
 
 Replace placeholders locally; do not paste keys into tracked files.
 
-## 3. VS Code / Cursor (local only)
+## 3. VS Code / Cursor debugger (F5)
 
-- Create **`.vscode/launch.json`** (optional) with `"toolArgs"` or `args` containing `--dart-define=...`, **or**
-- Use a **task** / script that wraps `flutter run` with defines.
+This repo includes **`split_spend/.vscode/launch.json`**: it passes `SUPABASE_URL` and `SUPABASE_ANON_KEY` via **`toolArgs`** so **Run and Debug** works like `flutter run` with `--dart-define`.
 
-Keep `launch.json` **out of git** if it contains secrets, **or** use placeholder defines and each developer copies locally.
+1. Open **`split_spend/.vscode/launch.json`**.
+2. Replace the two placeholder values with your real project URL and anon (or publishable) key.
+3. Pick the right **launch configuration** (dropdown next to the Play button):
+   - **`split_spend`** — use when your workspace folder **is** `split_spend`.
+   - **`split_spend (monorepo folder open)`** — use when the workspace root is the parent repo (e.g. `net-ninja-flutter`) and `split_spend` is a subfolder.
+4. Press **F5** or **Start Debugging**.
+
+**Git:** Prefer keeping **placeholders** in `launch.json` and filling real keys only on your machine—or add `launch.json` to `.gitignore` locally if you commit real keys by mistake.
+
+If `toolArgs` is ignored by your Dart extension version, use **Terminal** and the `flutter run` command from section 2 instead.
 
 ## 4. CI / release builds
 

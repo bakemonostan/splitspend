@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "split_spend",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=YOUR_ANON_OR_PUBLISHABLE_KEY"
+      ]
+    },
+    {
+      "name": "split_spend (monorepo folder open)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/split_spend",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=YOUR_ANON_OR_PUBLISHABLE_KEY"
+      ]
+    }
+  ]
+}
