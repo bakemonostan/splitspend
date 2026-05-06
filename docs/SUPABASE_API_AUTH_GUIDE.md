@@ -18,6 +18,8 @@ Step-by-step guide to implement: Supabase auth, session-aware navigation (home v
 | Sign in / sign up / reset password | `lib/src/features/auth/screens/*.dart` |
 | Missing keys screen | `lib/src/app/missing_supabase_config_screen.dart` |
 
+**Workspace:** Open the **`split_spend`** folder in your editor so `.vscode/launch.json` applies.
+
 **Run (replace with your project values):**
 
 ```bash

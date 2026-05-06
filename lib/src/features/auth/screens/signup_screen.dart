@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/auth/validation/auth_field_validators.dart';
 import 'package:split_spend/src/features/auth/widgets/auth_brand_header.dart';
 import 'package:split_spend/src/features/auth/widgets/auth_footer_link.dart';
@@ -54,25 +55,23 @@ class _SignupScreenState extends State<SignupScreen> {
         data: {'full_name': _nameController.text.trim()},
       );
       if (!mounted) return;
-      if (res.session == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Check your email to confirm your account.'),
-          ),
-        );
+      if (res.user == null) {
+        await AppToast.error('Could not create account. Please try again.');
+        return;
       }
+      // If email confirmation is off, Supabase returns a session and AuthGate
+      // would jump to Home. We want sign-in first, so clear any session.
+      await Supabase.instance.client.auth.signOut();
+      if (!mounted) return;
+      await AppToast.success(
+        'Account created. Sign in with your email and password.',
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
     } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
-      }
+      if (mounted) await AppToast.error(e.message);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
+      if (mounted) await AppToast.error(e.toString());
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

@@ -3,7 +3,6 @@ import 'package:split_spend/src/features/auth/screens/signin_screen.dart';
 import 'package:split_spend/src/features/home/home_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Listens to Supabase auth and shows [HomeScreen] or [SigninScreen].
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 

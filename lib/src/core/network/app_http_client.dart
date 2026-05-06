@@ -3,8 +3,6 @@ import 'package:split_spend/src/core/config/supabase_env.dart';
 import 'package:split_spend/src/core/network/api_error.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Dio instance for **custom** HTTP (Edge Functions or external REST).  
-/// Supabase DB/Auth via `Supabase.instance.client` does not need this.
 class AppHttpClient {
   AppHttpClient._();
 

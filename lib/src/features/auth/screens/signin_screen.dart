@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/auth/screens/forgotpassword_screen.dart';
 import 'package:split_spend/src/features/auth/screens/signup_screen.dart';
 import 'package:split_spend/src/features/auth/validation/auth_field_validators.dart';
@@ -46,18 +47,12 @@ class _SigninScreenState extends State<SigninScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      // No BuildContext needed; show even if AuthGate swaps to Home immediately.
+      await AppToast.success('Signed in successfully.');
     } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
-      }
+      await AppToast.error(e.message);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
+      await AppToast.error(e.toString());
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

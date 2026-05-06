@@ -31,12 +31,16 @@ The current Flutter app already includes an onboarding flow with 3 pages and cus
 
 ## Run locally
 
-From project root (`split_spend`):
+Open **`split_spend`** as the Cursor/VS Code workspace folder (not a parent monorepo folder).
+
+From this folder:
 
 ```bash
 flutter pub get
 flutter run
 ```
+
+For Supabase, use **Run and Debug** → **Flutter (SplitSpend + Supabase)** or pass `--dart-define` as in `docs/ENV_SETUP.md`.
 
 ## Validate changes
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/core/config/supabase_env.dart';
+import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/auth/validation/auth_field_validators.dart';
 import 'package:split_spend/src/features/auth/widgets/auth_input_decoration.dart';
 import 'package:split_spend/src/theme/theme.dart';
@@ -27,24 +28,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             SupabaseEnv.redirectUrl.isEmpty ? null : SupabaseEnv.redirectUrl,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('If an account exists, check your email for a reset link.'),
-        ),
+      await AppToast.info(
+        'If an account exists, check your email for a reset link.',
       );
+      if (!mounted) return;
       Navigator.of(context).pop();
     } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
-      }
+      if (mounted) await AppToast.error(e.message);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
+      if (mounted) await AppToast.error(e.toString());
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

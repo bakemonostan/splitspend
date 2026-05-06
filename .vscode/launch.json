@@ -2,25 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "split_spend",
+      "name": "Flutter (SplitSpend + Supabase)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "toolArgs": [
-        "--dart-define=SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=YOUR_ANON_OR_PUBLISHABLE_KEY"
-      ]
+      "toolArgs": ["--dart-define-from-file=dart_defines.local.json"]
     },
     {
-      "name": "split_spend (monorepo folder open)",
-      "request": "launch",
-      "type": "dart",
-      "cwd": "${workspaceFolder}/split_spend",
-      "program": "lib/main.dart",
-      "toolArgs": [
-        "--dart-define=SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=YOUR_ANON_OR_PUBLISHABLE_KEY"
-      ]
+      "name": "Attach to Flutter (after terminal flutter run)",
+      "request": "attach",
+      "type": "dart"
     }
   ]
 }
