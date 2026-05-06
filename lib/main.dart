@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:split_spend/src/features/onboarding/widgets/pageview_builder.dart';
+import 'package:split_spend/src/app/auth_gate.dart';
+import 'package:split_spend/src/app/missing_supabase_config_screen.dart';
+import 'package:split_spend/src/core/config/supabase_env.dart';
+import 'package:split_spend/src/theme/theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (SupabaseEnv.isConfigured) {
+    await Supabase.initialize(
+      url: SupabaseEnv.url,
+      anonKey: SupabaseEnv.anonKey,
+    );
+  }
+
+  runApp(const SplitSpendApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SplitSpendApp extends StatelessWidget {
+  const SplitSpendApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const PageViewBuilder(),
+      title: 'SplitSpend',
+      theme: primaryTheme,
+      home: SupabaseEnv.isConfigured
+          ? const AuthGate()
+          : const MissingSupabaseConfigScreen(),
     );
   }
 }

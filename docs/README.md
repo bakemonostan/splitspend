@@ -13,6 +13,8 @@ The current Flutter app already includes an onboarding flow with 3 pages and cus
   Product requirements for MVP scope, user flows, acceptance criteria, and high-level data model.
 - `DESIGN_SYSTEM.md`  
   UI tokens, component rules, spacing, typography, and accessibility guidance.
+- `SUPABASE_API_AUTH_GUIDE.md`  
+  Step-by-step: Supabase init, auth, protected navigation, and Dio-style API clients.
 
 ## Current app snapshot (implementation)
 

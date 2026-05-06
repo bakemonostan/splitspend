@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local secrets (never commit)
+.env
+.env.*
+!.env.example
+secrets.json
+dart_defines.local.json
