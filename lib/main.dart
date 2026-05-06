@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:split_spend/src/app/auth_gate.dart';
+import 'package:split_spend/src/app/main_shell.dart';
 import 'package:split_spend/src/app/missing_supabase_config_screen.dart';
 import 'package:split_spend/src/core/config/supabase_env.dart';
 import 'package:split_spend/src/features/onboarding/widgets/pageview_builder.dart';
@@ -33,7 +33,7 @@ class SplitSpendApp extends StatelessWidget {
                 onFinished: () {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute<void>(
-                      builder: (context) => const AuthGate(),
+                      builder: (context) => const MainShell(),
                     ),
                   );
                 },
