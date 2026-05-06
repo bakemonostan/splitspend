@@ -70,7 +70,7 @@ class _GroupTitleAndMembers extends StatelessWidget {
         Text(
           summary.name,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             color: AppPalette.neutral900,
           ),
@@ -80,14 +80,14 @@ class _GroupTitleAndMembers extends StatelessWidget {
           children: [
             Icon(
               Icons.people_outline,
-              size: 16,
+              size: 12,
               color: AppPalette.neutral500,
             ),
             const SizedBox(width: 4),
             Text(
               '${summary.memberCount} members',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 10,
                 color: AppPalette.neutral500,
               ),
             ),
@@ -111,7 +111,7 @@ class _GroupBalanceColumn extends StatelessWidget {
         Text(
           summary.statusLabel,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: FontWeight.w500,
             color: AppPalette.neutral500,
           ),
@@ -120,7 +120,7 @@ class _GroupBalanceColumn extends StatelessWidget {
         Text(
           summary.amountLabel,
           style: TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             color: summary.amountColor,
           ),

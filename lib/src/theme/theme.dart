@@ -60,6 +60,22 @@ class AppColors {
 }
 
 ThemeData primaryTheme = ThemeData(
+  navigationBarTheme: NavigationBarThemeData(
+    labelTextStyle: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+      if (states.contains(WidgetState.selected)) {
+        return GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppPalette.primary500,
+        );
+      }
+      return GoogleFonts.inter(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: AppPalette.neutral500,
+      );
+    }),
+  ),
   textTheme: GoogleFonts.interTextTheme().copyWith(
     headlineLarge: GoogleFonts.manrope(
       fontWeight: FontWeight.w700,

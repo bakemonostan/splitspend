@@ -44,7 +44,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFFF8F9F9),
+      color: AppPalette.primary50,
       child: SafeArea(
         bottom: false,
         child: CustomScrollView(
@@ -58,10 +58,7 @@ class HomeScreen extends StatelessWidget {
                   ..._demoGroups.map(
                     (g) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: GroupSummaryCard(
-                        summary: g,
-                        onTap: () {},
-                      ),
+                      child: GroupSummaryCard(summary: g, onTap: () {}),
                     ),
                   ),
                   const SizedBox(height: 8),

@@ -31,13 +31,12 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ),
-      title: Text(
-        'SplitSpend',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppPalette.primary500,
-        ),
+      title: Image.asset(
+        'assets/img/general/logo_filled.png',
+        fit: BoxFit.contain,
+        alignment: Alignment.center,
+        width: 40,
+        height: 40,
       ),
       actions: [
         IconButton(

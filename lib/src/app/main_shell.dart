@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/features/activity/activity_screen.dart';
-import 'package:split_spend/src/features/home/home_screen.dart';
+import 'package:split_spend/src/features/home/screens/home_screen.dart';
 import 'package:split_spend/src/features/home/widgets/home_app_bar.dart';
-import 'package:split_spend/src/features/settings/settings_screen.dart';
+import 'package:split_spend/src/features/settings/screens/settings_screen.dart';
+import 'package:split_spend/src/features/settings/widgets/settings_app_bar.dart';
 import 'package:split_spend/src/theme/theme.dart';
 
 class MainShell extends StatefulWidget {
@@ -15,7 +16,7 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _index = 0;
 
-  static const _titles = ['Activity', 'Settings'];
+  static const _activityTitle = 'Activity';
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +24,17 @@ class _MainShellState extends State<MainShell> {
       backgroundColor: const Color(0xFFF8F9F9),
       appBar: _index == 0
           ? const HomeAppBar()
+          : _index == 2
+          ? const SettingsAppBar()
           : AppBar(
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
-              title: Text(
-                _titles[_index - 1],
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
+              title: const Text(
+                _activityTitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                   color: AppPalette.neutral900,
                 ),
               ),
@@ -77,8 +81,11 @@ class _MainShellState extends State<MainShell> {
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined, color: AppPalette.neutral500),
-              selectedIcon: Icon(Icons.home_rounded, color: AppPalette.primary500),
+              icon: Icon(Icons.home_outlined, color: AppPalette.neutral200),
+              selectedIcon: Icon(
+                Icons.home_rounded,
+                color: AppPalette.primary400,
+              ),
               label: 'Home',
             ),
             NavigationDestination(
