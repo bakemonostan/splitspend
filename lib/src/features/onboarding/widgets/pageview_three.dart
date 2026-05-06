@@ -3,7 +3,9 @@ import 'package:split_spend/src/theme/theme.dart';
 import 'package:split_spend/src/features/onboarding/widgets/onboarding_footer.dart';
 
 class PageViewThree extends StatelessWidget {
-  const PageViewThree({super.key});
+  const PageViewThree({super.key, required this.onPrimary});
+
+  final VoidCallback onPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,7 @@ class PageViewThree extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () {},
+              onPressed: onPrimary,
               child: const Text('Get Started'),
             ),
             const OnboardingFooter(),

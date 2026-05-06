@@ -6,7 +6,10 @@ import 'package:split_spend/src/features/onboarding/widgets/pageview_three.dart'
 import 'package:split_spend/src/theme/theme.dart';
 
 class PageViewBuilder extends StatefulWidget {
-  const PageViewBuilder({super.key});
+  const PageViewBuilder({super.key, required this.onFinished});
+
+  /// Called after the last onboarding page (e.g. navigate to auth).
+  final VoidCallback onFinished;
 
   static const int _pageCount = 3;
 
@@ -33,6 +36,19 @@ class _PageViewBuilderState extends State<PageViewBuilder> {
     }
   }
 
+  void _onPrimaryButton() {
+    final current = _pageController.page?.round() ?? 0;
+    if (current < PageViewBuilder._pageCount - 1) {
+      _pageController.animateToPage(
+        current + 1,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      widget.onFinished();
+    }
+  }
+
   @override
   void dispose() {
     _pageController.removeListener(_onPageScroll);
@@ -50,7 +66,11 @@ class _PageViewBuilderState extends State<PageViewBuilder> {
           PageView(
             controller: _pageController,
             physics: const BouncingScrollPhysics(),
-            children: const [PageViewOne(), PageViewTwo(), PageViewThree()],
+            children: [
+              PageViewOne(onPrimary: _onPrimaryButton),
+              PageViewTwo(onPrimary: _onPrimaryButton),
+              PageViewThree(onPrimary: _onPrimaryButton),
+            ],
           ),
           Positioned(
             left: 0,
