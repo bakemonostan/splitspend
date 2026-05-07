@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:split_spend/src/features/expenses/screens/create_expense_screen.dart';
 import 'package:split_spend/src/features/activity/activity_screen.dart';
 import 'package:split_spend/src/features/groups/screens/create_group_screen.dart';
 import 'package:split_spend/src/features/groups/screens/groups_screen.dart';
@@ -38,6 +39,15 @@ class _MainShellState extends State<MainShell> {
     }
   }
 
+  Future<void> _openCreateExpense() async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const CreateExpenseScreen()),
+    );
+    if (created == true && mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,10 +80,15 @@ class _MainShellState extends State<MainShell> {
       ),
       floatingActionButton: _index == 0 || _index == 1
           ? FloatingActionButton(
-              onPressed: _openCreateGroup,
+              onPressed: _index == 0 ? _openCreateExpense : _openCreateGroup,
               backgroundColor: AppPalette.primary500,
               foregroundColor: Colors.white,
-              child: const Icon(Icons.person_add_alt_1_rounded),
+              shape: const CircleBorder(),
+              child: Icon(
+                _index == 0
+                    ? Icons.add_rounded
+                    : Icons.person_add_alt_1_rounded,
+              ),
             )
           : null,
       bottomNavigationBar: DecoratedBox(
