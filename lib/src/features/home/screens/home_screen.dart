@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/expenses/data/expenses_repository.dart';
 import 'package:split_spend/src/features/expenses/models/expense_item.dart';
+import 'package:split_spend/src/features/expenses/screens/expense_details_screen.dart';
 import 'package:split_spend/src/features/groups/screens/create_group_screen.dart';
 import 'package:split_spend/src/features/groups/screens/join_group_screen.dart';
 import 'package:split_spend/src/features/groups/widgets/start_something_new_card.dart';
@@ -143,7 +144,16 @@ class _HomeScreenState extends State<HomeScreen> {
           .map(
             (e) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: HomeExpenseRowCard(expense: e),
+              child: HomeExpenseRowCard(
+                expense: e,
+                onTap: () async {
+                  await Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => ExpenseDetailsScreen(expenseId: e.id),
+                    ),
+                  );
+                },
+              ),
             ),
           )
           .toList(),

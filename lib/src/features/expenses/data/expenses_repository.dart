@@ -18,7 +18,9 @@ class ExpensesRepository {
 
     final rows = await _client
         .from('expenses')
-        .select('id, group_id, amount, currency, category, note, spent_at, groups(name)')
+        .select(
+          'id, group_id, created_by, amount, currency, category, note, spent_at, receipt_storage_path, groups(name)',
+        )
         .eq('created_by', uid)
         .order('spent_at', ascending: false)
         .limit(limit);
@@ -40,6 +42,7 @@ class ExpensesRepository {
         ExpenseItem(
           id: m['id']?.toString() ?? '',
           groupId: m['group_id']?.toString() ?? '',
+          createdBy: m['created_by']?.toString() ?? '',
           groupName: group is Map<String, dynamic>
               ? (group['name'] as String? ?? 'Group')
               : 'Group',
@@ -48,10 +51,49 @@ class ExpensesRepository {
           category: m['category'] as String? ?? 'Other',
           note: m['note'] as String?,
           spentAt: spentAt,
+          receiptStoragePath: m['receipt_storage_path'] as String?,
         ),
       );
     }
     return out;
+  }
+
+  Future<ExpenseItem?> fetchExpenseById(String expenseId) async {
+    final row = await _client
+        .from('expenses')
+        .select(
+          'id, group_id, created_by, amount, currency, category, note, spent_at, receipt_storage_path, groups(name)',
+        )
+        .eq('id', expenseId)
+        .maybeSingle();
+    if (row == null) {
+      return null;
+    }
+    final m = Map<String, dynamic>.from(row);
+    final group = m['groups'];
+    final amountRaw = m['amount'];
+    final amount = amountRaw is num
+        ? amountRaw.toDouble()
+        : double.tryParse(amountRaw?.toString() ?? '') ?? 0;
+    final spentAtRaw = m['spent_at']?.toString();
+    final spentAt = spentAtRaw == null
+        ? DateTime.now()
+        : DateTime.tryParse(spentAtRaw)?.toLocal() ?? DateTime.now();
+
+    return ExpenseItem(
+      id: m['id']?.toString() ?? '',
+      groupId: m['group_id']?.toString() ?? '',
+      createdBy: m['created_by']?.toString() ?? '',
+      groupName: group is Map<String, dynamic>
+          ? (group['name'] as String? ?? 'Group')
+          : 'Group',
+      amount: amount,
+      currency: m['currency'] as String? ?? 'USD',
+      category: m['category'] as String? ?? 'Other',
+      note: m['note'] as String?,
+      spentAt: spentAt,
+      receiptStoragePath: m['receipt_storage_path'] as String?,
+    );
   }
 
   Future<void> createExpense({
