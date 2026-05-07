@@ -17,9 +17,11 @@ class ExpenseDetailsScreen extends StatefulWidget {
   const ExpenseDetailsScreen({
     super.key,
     required this.expenseId,
+    this.refreshSignal,
   });
 
   final String expenseId;
+  final ValueNotifier<int>? refreshSignal;
 
   @override
   State<ExpenseDetailsScreen> createState() => _ExpenseDetailsScreenState();
@@ -102,6 +104,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
                   ),
                 );
                 if (changed == true && mounted) {
+                  widget.refreshSignal?.value++;
                   await _load();
                 }
               },

@@ -13,10 +13,16 @@ import 'package:split_spend/src/theme/theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.groupsRefreshSignal});
+  const HomeScreen({
+    super.key,
+    this.groupsRefreshSignal,
+    this.financeRefreshSignal,
+  });
 
   /// When create/join succeeds from Home, bump so the Groups tab reloads.
   final ValueNotifier<int>? groupsRefreshSignal;
+  /// Invalidate expense/activity style data after write operations.
+  final ValueNotifier<int>? financeRefreshSignal;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -32,12 +38,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _repo = ExpensesRepository(Supabase.instance.client);
     widget.groupsRefreshSignal?.addListener(_onRefreshSignal);
+    widget.financeRefreshSignal?.addListener(_onRefreshSignal);
     _load();
   }
 
   @override
   void dispose() {
     widget.groupsRefreshSignal?.removeListener(_onRefreshSignal);
+    widget.financeRefreshSignal?.removeListener(_onRefreshSignal);
     super.dispose();
   }
 
@@ -147,11 +155,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: HomeExpenseRowCard(
                 expense: e,
                 onTap: () async {
-                  await Navigator.of(context).push<void>(
+                  final changed = await Navigator.of(context).push<bool>(
                     MaterialPageRoute(
-                      builder: (_) => ExpenseDetailsScreen(expenseId: e.id),
+                      builder: (_) => ExpenseDetailsScreen(
+                        expenseId: e.id,
+                        refreshSignal: widget.financeRefreshSignal,
+                      ),
                     ),
                   );
+                  if (changed == true && mounted) {
+                    await _load();
+                  }
                 },
               ),
             ),

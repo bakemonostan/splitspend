@@ -6,7 +6,9 @@ import 'package:split_spend/src/theme/theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({super.key});
+  const ActivityScreen({super.key, this.refreshSignal});
+
+  final ValueNotifier<int>? refreshSignal;
 
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
@@ -23,8 +25,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void initState() {
     super.initState();
     _repo = ActivityRepository(Supabase.instance.client);
+    widget.refreshSignal?.addListener(_onRefreshSignal);
     _load();
   }
+
+  @override
+  void dispose() {
+    widget.refreshSignal?.removeListener(_onRefreshSignal);
+    super.dispose();
+  }
+
+  void _onRefreshSignal() => _load();
 
   Future<void> _load() async {
     setState(() {

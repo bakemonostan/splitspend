@@ -21,12 +21,15 @@ class _MainShellState extends State<MainShell> {
 
   /// Bumped after a group is created from the FAB so [GroupsScreen] reloads.
   final ValueNotifier<int> _groupsRefreshSignal = ValueNotifier<int>(0);
+  /// Bumped after expense create/edit so Home + Activity reload.
+  final ValueNotifier<int> _financeRefreshSignal = ValueNotifier<int>(0);
 
   static const _activityTitle = 'Activity';
 
   @override
   void dispose() {
     _groupsRefreshSignal.dispose();
+    _financeRefreshSignal.dispose();
     super.dispose();
   }
 
@@ -44,7 +47,7 @@ class _MainShellState extends State<MainShell> {
       MaterialPageRoute(builder: (_) => const CreateExpenseScreen()),
     );
     if (created == true && mounted) {
-      setState(() {});
+      _financeRefreshSignal.value++;
     }
   }
 
@@ -72,9 +75,12 @@ class _MainShellState extends State<MainShell> {
       body: IndexedStack(
         index: _index,
         children: [
-          HomeScreen(groupsRefreshSignal: _groupsRefreshSignal),
+          HomeScreen(
+            groupsRefreshSignal: _groupsRefreshSignal,
+            financeRefreshSignal: _financeRefreshSignal,
+          ),
           GroupsScreen(refreshSignal: _groupsRefreshSignal),
-          const ActivityScreen(),
+          ActivityScreen(refreshSignal: _financeRefreshSignal),
           const SettingsScreen(),
         ],
       ),
