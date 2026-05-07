@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/expenses/data/expenses_repository.dart';
 import 'package:split_spend/src/features/groups/data/groups_repository.dart';
@@ -16,6 +17,7 @@ class CreateExpenseScreen extends StatefulWidget {
 class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   late final ExpensesRepository _expensesRepo;
   late final GroupsRepository _groupsRepo;
@@ -27,6 +29,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   String? _selectedGroupId;
   String _selectedCategory = 'Dining';
   DateTime _selectedDate = DateTime.now();
+  XFile? _receipt;
   final List<String> _categories = [
     'Dining',
     'Shopping',
@@ -44,13 +47,28 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
     _expensesRepo = ExpensesRepository(client);
     _groupsRepo = GroupsRepository(client);
     _loadGroups();
+    _amountController.addListener(_onFieldChanged);
+    _noteController.addListener(_onFieldChanged);
   }
 
   @override
   void dispose() {
+    _amountController.removeListener(_onFieldChanged);
+    _noteController.removeListener(_onFieldChanged);
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  void _onFieldChanged() => setState(() {});
+
+  bool get _canSave {
+    final amount = double.tryParse(_amountController.text.trim());
+    final hasAmount = amount != null && amount > 0;
+    final hasNote = _noteController.text.trim().isNotEmpty;
+    final hasGroup = _selectedGroupId != null && _selectedGroupId!.isNotEmpty;
+    final hasCategory = _selectedCategory.trim().isNotEmpty;
+    return !_saving && hasAmount && hasNote && hasGroup && hasCategory;
   }
 
   Future<void> _loadGroups() async {
@@ -74,31 +92,10 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   }
 
   Future<void> _addCustomCategory() async {
-    final controller = TextEditingController();
     final value = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('New category'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'e.g. Fuel',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
+      builder: (context) => const _AddCategoryDialog(),
     );
-    controller.dispose();
 
     final trimmed = value?.trim();
     if (trimmed == null || trimmed.isEmpty) {
@@ -110,6 +107,19 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       }
       _selectedCategory = trimmed;
     });
+  }
+
+  Future<void> _pickReceipt(ImageSource source) async {
+    final picked = await _picker.pickImage(
+      source: source,
+      maxWidth: 1800,
+      imageQuality: 88,
+    );
+    if (picked == null || !mounted) {
+      return;
+    }
+    setState(() => _receipt = picked);
+    await AppToast.success('Receipt attached');
   }
 
   Future<void> _save() async {
@@ -129,12 +139,20 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
 
     setState(() => _saving = true);
     try {
+      String? receiptStoragePath;
+      if (_receipt != null) {
+        receiptStoragePath = await _expensesRepo.uploadExpenseReceipt(
+          groupId: groupId,
+          file: _receipt!,
+        );
+      }
       await _expensesRepo.createExpense(
         groupId: groupId,
         amount: amount,
         category: _selectedCategory,
         note: _noteController.text,
         spentAt: _selectedDate,
+        receiptStoragePath: receiptStoragePath,
       );
       if (!mounted) {
         return;
@@ -237,12 +255,6 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
           icon: const Icon(Icons.close_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.help_outline_rounded),
-          ),
-        ],
         title: const Text(
           'Add Expense',
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
@@ -270,7 +282,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
               ),
               decoration: _inputDecoration(
                 '0.00',
-                prefix: '\$',
+                prefix: r'$ ',
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 18,
@@ -338,6 +350,9 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                 const Spacer(),
                 TextButton(
                   onPressed: _showAllCategories,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppPalette.primary500,
+                  ),
                   child: const Text('View All'),
                 ),
               ],
@@ -348,14 +363,29 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
               children: _categories.take(4)
                   .map(
                     (c) => ChoiceChip(
-                      label: Text(
-                        c,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: _selectedCategory == c
-                              ? Colors.white
-                              : AppPalette.neutral900,
-                        ),
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_categoryIcon(c) != null) ...[
+                            Icon(
+                              _categoryIcon(c),
+                              size: 14,
+                              color: _selectedCategory == c
+                                  ? Colors.white
+                                  : AppPalette.neutral700,
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Text(
+                            c,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: _selectedCategory == c
+                                  ? Colors.white
+                                  : AppPalette.neutral900,
+                            ),
+                          ),
+                        ],
                       ),
                       selected: _selectedCategory == c,
                       onSelected: (_) => setState(() => _selectedCategory = c),
@@ -367,7 +397,19 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                       ),
                     ),
                   )
-                  .toList(),
+                  .toList()
+                ..add(
+                  ChoiceChip(
+                    label: const Icon(Icons.add, size: 18),
+                    selected: false,
+                    onSelected: (_) => _addCustomCategory(),
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: AppPalette.neutral200),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
+                ),
             ),
             const SizedBox(height: 22),
             Text(
@@ -379,18 +421,20 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
             ),
             const SizedBox(height: 10),
             Row(
-              children: const [
+              children: [
                 Expanded(
                   child: _ReceiptActionTile(
                     icon: Icons.photo_camera_outlined,
                     label: 'Take Photo',
+                    onTap: () => _pickReceipt(ImageSource.camera),
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _ReceiptActionTile(
                     icon: Icons.image_outlined,
                     label: 'Gallery',
+                    onTap: () => _pickReceipt(ImageSource.gallery),
                   ),
                 ),
               ],
@@ -422,16 +466,20 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'No receipt attached',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
+                        Text(
+                          _receipt == null
+                              ? 'No receipt attached'
+                              : 'Receipt attached',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
                             fontSize: 15,
                             color: AppPalette.neutral900,
-                          ),
+                        ),
                         ),
                         Text(
-                          'Keep your paper trails digital.',
+                          _receipt == null
+                              ? 'Keep your paper trails digital.'
+                              : _receipt!.name,
                           style: TextStyle(
                             color: AppPalette.neutral500,
                             fontSize: 12,
@@ -451,39 +499,69 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFD5E0EE)),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.group_outlined, color: AppPalette.primary600),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Split with group',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
+                  Row(
+                    children: const [
+                      Icon(Icons.group_outlined, color: AppPalette.primary600),
+                      SizedBox(width: 8),
+                      Text(
+                        'Split with group',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        'Equally',
+                        style: TextStyle(
+                          color: AppPalette.primary600,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 10),
                   if (_loadingGroups)
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Center(
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
                     )
                   else
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedGroupId,
-                        hint: const Text('Pick'),
-                        onChanged: (v) => setState(() => _selectedGroupId = v),
-                        items: _groups
-                            .where((g) => g.id != null)
-                            .map(
-                              (g) => DropdownMenuItem<String>(
-                                value: g.id!,
-                                child: Text(g.name),
-                              ),
-                            )
-                            .toList(),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppPalette.neutral200),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: _selectedGroupId,
+                            hint: const Text('Pick group'),
+                            onChanged: (v) => setState(() => _selectedGroupId = v),
+                            items: _groups
+                                .where((g) => g.id != null)
+                                .map(
+                                  (g) => DropdownMenuItem<String>(
+                                    value: g.id!,
+                                    child: Text(g.name),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -493,7 +571,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
             SizedBox(
               height: 52,
               child: FilledButton.icon(
-                onPressed: _saving ? null : _save,
+                onPressed: _canSave ? _save : null,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppPalette.primary500,
                   foregroundColor: Colors.white,
@@ -527,6 +605,11 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
     return InputDecoration(
       hintText: hint,
       prefixText: prefix,
+      prefixStyle: const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        color: AppPalette.neutral500,
+      ),
       filled: true,
       fillColor: Colors.white,
       contentPadding:
@@ -546,44 +629,112 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       ),
     );
   }
+
+  IconData? _categoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'dining':
+        return Icons.restaurant_rounded;
+      case 'shopping':
+        return Icons.shopping_bag_outlined;
+      case 'transport':
+        return Icons.directions_car_outlined;
+      case 'rent':
+        return Icons.home_outlined;
+      default:
+        return null;
+    }
+  }
 }
 
 class _ReceiptActionTile extends StatelessWidget {
   const _ReceiptActionTile({
     required this.icon,
     required this.label,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 94,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppPalette.neutral200,
-          style: BorderStyle.solid,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 94,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppPalette.neutral200,
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: AppPalette.secondary500),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppPalette.secondary600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: AppPalette.secondary500),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              color: AppPalette.secondary600,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+    );
+  }
+}
+
+class _AddCategoryDialog extends StatefulWidget {
+  const _AddCategoryDialog();
+
+  @override
+  State<_AddCategoryDialog> createState() => _AddCategoryDialogState();
+}
+
+class _AddCategoryDialogState extends State<_AddCategoryDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('New category'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: 'e.g. Fuel',
+        ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: const Text('Add'),
+        ),
+      ],
     );
   }
 }

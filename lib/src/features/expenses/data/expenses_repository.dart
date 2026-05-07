@@ -1,3 +1,5 @@
+import 'package:image_picker/image_picker.dart';
+import 'package:split_spend/src/core/storage/avatar_storage_service.dart';
 import 'package:split_spend/src/features/expenses/models/expense_item.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -58,6 +60,7 @@ class ExpensesRepository {
     required String category,
     String? note,
     DateTime? spentAt,
+    String? receiptStoragePath,
   }) async {
     final uid = _userId;
     if (uid == null) {
@@ -81,6 +84,41 @@ class ExpensesRepository {
       'category': category.trim().isEmpty ? 'Other' : category.trim(),
       'note': note?.trim().isEmpty == true ? null : note?.trim(),
       'spent_at': (spentAt ?? DateTime.now()).toUtc().toIso8601String(),
+      'receipt_storage_path': receiptStoragePath,
     });
+  }
+
+  Future<String> uploadExpenseReceipt({
+    required String groupId,
+    required XFile file,
+  }) async {
+    final uid = _userId;
+    if (uid == null) {
+      throw StateError('Sign in to upload a receipt.');
+    }
+    final ext = _extensionForMime(file.mimeType);
+    final millis = DateTime.now().millisecondsSinceEpoch;
+    final path = '$uid/expense-receipts/$groupId/$millis.$ext';
+    final bytes = await file.readAsBytes();
+    final contentType = file.mimeType ??
+        (ext == 'png' ? 'image/png' : 'image/jpeg');
+
+    await _client.storage.from(AvatarStorageService.bucketId).uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(
+        upsert: false,
+        contentType: contentType,
+      ),
+    );
+
+    return path;
+  }
+
+  static String _extensionForMime(String? mime) {
+    if (mime != null && mime.toLowerCase().contains('png')) {
+      return 'png';
+    }
+    return 'jpg';
   }
 }
