@@ -130,6 +130,39 @@ class ExpensesRepository {
     });
   }
 
+  Future<void> updateExpense({
+    required String expenseId,
+    required String groupId,
+    required double amount,
+    required String category,
+    String? note,
+    DateTime? spentAt,
+    String? receiptStoragePath,
+  }) async {
+    final uid = _userId;
+    if (uid == null) {
+      throw StateError('Sign in to edit expense.');
+    }
+    if (groupId.isEmpty) {
+      throw ArgumentError('Pick a group.');
+    }
+    if (amount <= 0) {
+      throw ArgumentError('Amount must be positive.');
+    }
+    final user = _client.auth.currentUser;
+    final currency = (user?.userMetadata?['currency'] as String?)?.trim();
+
+    await _client.from('expenses').update({
+      'group_id': groupId,
+      'amount': amount,
+      'currency': (currency == null || currency.isEmpty) ? 'USD' : currency,
+      'category': category.trim().isEmpty ? 'Other' : category.trim(),
+      'note': note?.trim().isEmpty == true ? null : note?.trim(),
+      'spent_at': (spentAt ?? DateTime.now()).toUtc().toIso8601String(),
+      'receipt_storage_path': receiptStoragePath,
+    }).eq('id', expenseId).eq('created_by', uid);
+  }
+
   Future<String> uploadExpenseReceipt({
     required String groupId,
     required XFile file,

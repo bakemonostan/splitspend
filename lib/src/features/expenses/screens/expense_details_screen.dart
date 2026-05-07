@@ -3,6 +3,7 @@ import 'package:split_spend/src/core/storage/avatar_storage_service.dart';
 import 'package:split_spend/src/features/expenses/data/expenses_repository.dart';
 import 'package:split_spend/src/features/expenses/models/expense_item.dart';
 import 'package:split_spend/src/features/expenses/models/expense_split_member.dart';
+import 'package:split_spend/src/features/expenses/screens/edit_expense_screen.dart';
 import 'package:split_spend/src/features/expenses/widgets/details/expense_paid_by_card.dart';
 import 'package:split_spend/src/features/expenses/widgets/details/expense_receipt_card.dart';
 import 'package:split_spend/src/features/expenses/widgets/details/expense_split_breakdown_card.dart';
@@ -87,6 +88,26 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
+        actions: [
+          if ((_expense?.createdBy ?? '') == _currentUserId)
+            TextButton(
+              onPressed: () async {
+                final expense = _expense;
+                if (expense == null) {
+                  return;
+                }
+                final changed = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => EditExpenseScreen(expense: expense),
+                  ),
+                );
+                if (changed == true && mounted) {
+                  await _load();
+                }
+              },
+              child: const Text('Edit'),
+            ),
+        ],
       ),
       body: _buildBody(),
     );
