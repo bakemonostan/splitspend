@@ -5,6 +5,7 @@ import 'package:split_spend/src/features/groups/screens/create_group_screen.dart
 import 'package:split_spend/src/features/groups/screens/group_settings_screen.dart';
 import 'package:split_spend/src/features/groups/screens/join_group_screen.dart';
 import 'package:split_spend/src/features/groups/widgets/groups_header.dart';
+import 'package:split_spend/src/features/groups/widgets/groups_skeleton.dart';
 import 'package:split_spend/src/features/groups/widgets/start_something_new_card.dart';
 import 'package:split_spend/src/features/home/models/group_summary.dart';
 import 'package:split_spend/src/features/home/widgets/group_summary_card.dart';
@@ -124,8 +125,8 @@ class _GroupsScreenState extends State<GroupsScreen> {
     }
     if (_groups == null) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 48),
-        child: Center(child: CircularProgressIndicator()),
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: GroupsSkeleton(),
       );
     }
 

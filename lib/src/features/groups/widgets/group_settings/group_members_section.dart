@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:split_spend/src/core/ui/skeleton.dart';
 import 'package:split_spend/src/features/groups/models/group_member_display.dart';
 import 'package:split_spend/src/features/groups/widgets/group_settings/group_member_tile.dart';
 import 'package:split_spend/src/theme/theme.dart';
@@ -47,9 +48,19 @@ class GroupMembersSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (loading)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
+          const Skeleton(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                children: [
+                  _MemberTileSkeleton(),
+                  SizedBox(height: 12),
+                  _MemberTileSkeleton(),
+                  SizedBox(height: 12),
+                  _MemberTileSkeleton(),
+                ],
+              ),
+            ),
           )
         else
           Column(
@@ -69,6 +80,30 @@ class GroupMembersSection extends StatelessWidget {
                 ),
             ],
           ),
+      ],
+    );
+  }
+}
+
+class _MemberTileSkeleton extends StatelessWidget {
+  const _MemberTileSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        SkeletonBox(height: 44, width: 44, radius: 22),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonBox(height: 14, width: 120),
+              SizedBox(height: 8),
+              SkeletonBox(height: 10, width: 90),
+            ],
+          ),
+        ),
       ],
     );
   }

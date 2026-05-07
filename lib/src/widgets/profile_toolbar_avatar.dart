@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:split_spend/src/core/storage/avatar_storage_service.dart';
+import 'package:split_spend/src/core/ui/skeleton.dart';
 import 'package:split_spend/src/theme/theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -18,7 +19,17 @@ class ProfileToolbarAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<AuthState>(
       stream: Supabase.instance.client.auth.onAuthStateChange,
-      builder: (context, _) {
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            Supabase.instance.client.auth.currentUser == null) {
+          return Skeleton(
+            child: SkeletonBox(
+              height: radius * 2,
+              width: radius * 2,
+              radius: radius,
+            ),
+          );
+        }
         final user = Supabase.instance.client.auth.currentUser;
         final avatarUrl = AvatarStorageService.avatarUrlFromUser(user);
         final hasUrl = avatarUrl != null && avatarUrl.isNotEmpty;

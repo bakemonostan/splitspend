@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:split_spend/src/app/app_flow_controller.dart';
 import 'package:split_spend/src/core/config/app_version.dart';
 import 'package:split_spend/src/core/storage/avatar_storage_service.dart';
+import 'package:split_spend/src/core/ui/skeleton.dart';
 import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/settings/widgets/settings_group_card.dart';
 import 'package:split_spend/src/features/settings/widgets/settings_logout_tile.dart';
@@ -67,6 +68,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: StreamBuilder<AuthState>(
         stream: Supabase.instance.client.auth.onAuthStateChange,
         builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              Supabase.instance.client.auth.currentUser == null) {
+            return const _SettingsSkeleton();
+          }
           final user = Supabase.instance.client.auth.currentUser;
           final name = user == null
               ? '—'
@@ -222,6 +227,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: children,
+      ),
+    );
+  }
+}
+
+class _SettingsSkeleton extends StatelessWidget {
+  const _SettingsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeleton(
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                const SkeletonBox(height: 112, radius: 16),
+                const SizedBox(height: 20),
+                const SkeletonBox(height: 18, width: 88),
+                const SizedBox(height: 10),
+                const SkeletonBox(height: 122, radius: 16),
+                const SizedBox(height: 16),
+                const SkeletonBox(height: 18, width: 100),
+                const SizedBox(height: 10),
+                const SkeletonBox(height: 178, radius: 16),
+                const SizedBox(height: 16),
+                const SkeletonBox(height: 18, width: 70),
+                const SizedBox(height: 10),
+                const SkeletonBox(height: 70, radius: 16),
+                const SizedBox(height: 16),
+                const SkeletonBox(height: 18, width: 52),
+                const SizedBox(height: 10),
+                const SkeletonBox(height: 170, radius: 16),
+              ]),
+            ),
+          ),
+        ],
       ),
     );
   }
