@@ -3,6 +3,7 @@ import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/groups/data/groups_repository.dart';
 import 'package:split_spend/src/features/groups/screens/create_group_screen.dart';
 import 'package:split_spend/src/features/groups/screens/group_settings_screen.dart';
+import 'package:split_spend/src/features/groups/widgets/groups_error_state.dart';
 import 'package:split_spend/src/features/groups/screens/join_group_screen.dart';
 import 'package:split_spend/src/features/groups/widgets/groups_header.dart';
 import 'package:split_spend/src/features/groups/widgets/groups_skeleton.dart';
@@ -111,17 +112,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
 
   Widget _buildBody() {
     if (_error != null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Could not load groups',
-            style: TextStyle(color: AppPalette.neutral700),
-          ),
-          const SizedBox(height: 8),
-          TextButton(onPressed: _load, child: const Text('Retry')),
-        ],
-      );
+      return GroupsErrorState(onRetry: _load);
     }
     if (_groups == null) {
       return const Padding(

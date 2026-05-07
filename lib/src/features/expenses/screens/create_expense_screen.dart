@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:split_spend/src/core/ui/app_toast.dart';
+import 'package:split_spend/src/core/utils/number_formatters.dart';
 import 'package:split_spend/src/features/expenses/data/expenses_repository.dart';
+import 'package:split_spend/src/features/expenses/widgets/add_category_dialog.dart';
+import 'package:split_spend/src/features/expenses/widgets/receipt_action_tile.dart';
 import 'package:split_spend/src/features/groups/data/groups_repository.dart';
 import 'package:split_spend/src/features/home/models/group_summary.dart';
 import 'package:split_spend/src/theme/theme.dart';
@@ -65,7 +68,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   void _onFieldChanged() => setState(() {});
 
   bool get _canSave {
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount = NumberFormatters.parseCurrencyInput(_amountController.text);
     final hasAmount = amount != null && amount > 0;
     final hasNote = _noteController.text.trim().isNotEmpty;
     final hasGroup = _selectedGroupId != null && _selectedGroupId!.isNotEmpty;
@@ -96,7 +99,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   Future<void> _addCustomCategory() async {
     final value = await showDialog<String>(
       context: context,
-      builder: (context) => const _AddCategoryDialog(),
+      builder: (context) => const AddCategoryDialog(),
     );
 
     final trimmed = value?.trim();
@@ -133,7 +136,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       await AppToast.error('Select a group first');
       return;
     }
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount = NumberFormatters.parseCurrencyInput(_amountController.text);
     if (amount == null || amount <= 0) {
       await AppToast.error('Enter a valid amount');
       return;
@@ -295,6 +298,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                   Expanded(
                     child: TextField(
                       controller: _amountController,
+                      inputFormatters: [CurrencyTextInputFormatter()],
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
@@ -448,7 +452,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _ReceiptActionTile(
+                  child: ReceiptActionTile(
                     icon: Icons.photo_camera_outlined,
                     label: 'Take Photo',
                     onTap: () => _pickReceipt(ImageSource.camera),
@@ -456,7 +460,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _ReceiptActionTile(
+                  child: ReceiptActionTile(
                     icon: Icons.image_outlined,
                     label: 'Gallery',
                     onTap: () => _pickReceipt(ImageSource.gallery),
@@ -731,98 +735,5 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       default:
         return null;
     }
-  }
-}
-
-class _ReceiptActionTile extends StatelessWidget {
-  const _ReceiptActionTile({
-    required this.icon,
-    required this.label,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 94,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppPalette.neutral200,
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppPalette.secondary500),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppPalette.secondary600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AddCategoryDialog extends StatefulWidget {
-  const _AddCategoryDialog();
-
-  @override
-  State<_AddCategoryDialog> createState() => _AddCategoryDialogState();
-}
-
-class _AddCategoryDialogState extends State<_AddCategoryDialog> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('New category'),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        decoration: const InputDecoration(
-          hintText: 'e.g. Fuel',
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, _controller.text),
-          child: const Text('Add'),
-        ),
-      ],
-    );
   }
 }

@@ -5,6 +5,8 @@ import 'package:split_spend/src/features/expenses/models/expense_item.dart';
 import 'package:split_spend/src/features/groups/screens/create_group_screen.dart';
 import 'package:split_spend/src/features/groups/screens/join_group_screen.dart';
 import 'package:split_spend/src/features/groups/widgets/start_something_new_card.dart';
+import 'package:split_spend/src/features/home/widgets/home_empty_expenses_state.dart';
+import 'package:split_spend/src/features/home/widgets/home_expense_row_card.dart';
 import 'package:split_spend/src/features/home/widgets/home_header.dart';
 import 'package:split_spend/src/theme/theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -133,39 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     final expenses = _expenses!;
     if (expenses.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppPalette.neutral100),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: 40,
-              color: AppPalette.neutral400,
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'No expenses yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppPalette.neutral900,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Your created expenses will appear here.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppPalette.neutral500, fontSize: 14),
-            ),
-          ],
-        ),
-      );
+      return const HomeEmptyExpensesState();
     }
 
     return Column(
@@ -173,95 +143,10 @@ class _HomeScreenState extends State<HomeScreen> {
           .map(
             (e) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: _ExpenseRow(expense: e),
+              child: HomeExpenseRowCard(expense: e),
             ),
           )
           .toList(),
-    );
-  }
-}
-
-class _ExpenseRow extends StatelessWidget {
-  const _ExpenseRow({required this.expense});
-
-  final ExpenseItem expense;
-
-  @override
-  Widget build(BuildContext context) {
-    final amount = expense.amount.toStringAsFixed(2);
-    final date = '${expense.spentAt.day.toString().padLeft(2, '0')}/'
-        '${expense.spentAt.month.toString().padLeft(2, '0')}/'
-        '${expense.spentAt.year}';
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppPalette.neutral900.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                color: AppPalette.primary50,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.receipt_long_rounded,
-                color: AppPalette.primary600,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    expense.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                      color: AppPalette.neutral900,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${expense.groupName} • ${expense.category} • $date',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppPalette.neutral500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              '\$ $amount',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: AppPalette.primary600,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
