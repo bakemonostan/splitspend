@@ -112,8 +112,8 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final payer = members.where((m) => m.userId == expense.createdBy).firstOrNull;
-    final payerName = _displayNameForMember(payer, fallback: 'Member');
+    final creator = members.where((m) => m.userId == expense.createdBy).firstOrNull;
+    final creatorName = _displayNameForMember(creator, fallback: 'Member');
     final splitRows = _buildSplitRows(expense, members);
     final receiptPath = expense.receiptStoragePath;
     final receiptUrl = (receiptPath == null || receiptPath.isEmpty)
@@ -131,7 +131,8 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           ExpenseSummaryCard(expense: expense),
           const SizedBox(height: 12),
           ExpensePaidByCard(
-            payerName: payerName,
+            label: 'Created by',
+            payerName: creatorName,
             spentAt: expense.spentAt,
           ),
           const SizedBox(height: 12),
@@ -152,34 +153,41 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     if (members.isEmpty) {
       return const [];
     }
+    if (members.length == 1) {
+      final m = members.first;
+      return [
+        ExpenseSplitMember(
+          userId: m.userId,
+          displayName: m.userId == _currentUserId
+              ? 'You'
+              : _displayNameForMember(m, fallback: 'Member ${m.shortIdTail}'),
+          avatarUrl: m.avatarUrl,
+          amount: expense.amount,
+          subtitle: 'Only member in this group',
+          statusLabel: 'No split needed',
+          statusColorHex: 0xFF16A34A,
+        ),
+      ];
+    }
     final share = expense.amount / members.length;
 
     return members.map((m) {
-      final isPayer = m.userId == expense.createdBy;
       final isCurrent = m.userId == _currentUserId;
       final displayName = isCurrent
           ? 'You'
           : _displayNameForMember(m, fallback: 'Member ${m.shortIdTail}');
-
-      if (isPayer) {
-        return ExpenseSplitMember(
-          userId: m.userId,
-          displayName: displayName,
-          avatarUrl: m.avatarUrl,
-          amount: expense.amount,
-          subtitle: 'Paid the full amount',
-          statusLabel: 'Settled',
-          statusColorHex: 0xFF16A34A,
-        );
-      }
+      final isCreator = m.userId == expense.createdBy;
+      final subtitle = isCreator
+          ? 'Created this expense • split (1/${members.length})'
+          : 'Equally split (1/${members.length})';
 
       return ExpenseSplitMember(
         userId: m.userId,
         displayName: displayName,
         avatarUrl: m.avatarUrl,
         amount: share,
-        subtitle: 'Equally split (1/${members.length})',
-        statusLabel: isCurrent ? 'You owe' : 'Pending',
+        subtitle: subtitle,
+        statusLabel: isCurrent ? 'Payment due' : 'Pending payment',
         statusColorHex: isCurrent ? 0xFFDC2626 : 0xFF6B7280,
       );
     }).toList();

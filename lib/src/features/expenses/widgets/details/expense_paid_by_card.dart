@@ -4,10 +4,12 @@ import 'package:split_spend/src/theme/theme.dart';
 class ExpensePaidByCard extends StatelessWidget {
   const ExpensePaidByCard({
     super.key,
+    required this.label,
     required this.payerName,
     required this.spentAt,
   });
 
+  final String label;
   final String payerName;
   final DateTime spentAt;
 
@@ -27,7 +29,7 @@ class ExpensePaidByCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Paid by',
+            label,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.92),
               fontSize: 13,
