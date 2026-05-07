@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:split_spend/src/core/ui/app_toast.dart';
@@ -469,40 +471,113 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppPalette.neutral100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.receipt_long_outlined,
-                      size: 18,
-                      color: AppPalette.neutral500,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              child: _receipt == null
+                  ? Row(
                       children: [
-                        Text(
-                          _receipt == null
-                              ? 'No receipt attached'
-                              : 'Receipt attached',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: AppPalette.neutral900,
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppPalette.neutral100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.receipt_long_outlined,
+                            size: 18,
+                            color: AppPalette.neutral500,
+                          ),
                         ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'No receipt attached',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  color: AppPalette.neutral900,
+                                ),
+                              ),
+                              Text(
+                                'Keep your paper trails digital.',
+                                style: TextStyle(
+                                  color: AppPalette.neutral500,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            await showDialog<void>(
+                              context: context,
+                              builder: (ctx) => Dialog(
+                                insetPadding: const EdgeInsets.all(16),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(File(_receipt!.path)),
+                                ),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: AspectRatio(
+                              aspectRatio: 4 / 3,
+                              child: Image.file(
+                                File(_receipt!.path),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              size: 18,
+                              color: AppPalette.primary500,
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Receipt attached',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                                color: AppPalette.neutral900,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () async {
+                                await showDialog<void>(
+                                  context: context,
+                                  builder: (ctx) => Dialog(
+                                    insetPadding: const EdgeInsets.all(16),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.file(File(_receipt!.path)),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text('Preview'),
+                            ),
+                          ],
                         ),
                         Text(
-                          _receipt == null
-                              ? 'Keep your paper trails digital.'
-                              : _receipt!.name,
+                          _receipt!.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: AppPalette.neutral500,
                             fontSize: 12,
@@ -510,9 +585,6 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: 12),
             Container(
