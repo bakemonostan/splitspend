@@ -12,7 +12,27 @@ class GroupSummary {
     required this.icon,
     required this.iconColor,
     required this.iconTileBackground,
+    this.id,
+    this.inviteCode,
+    this.isOwner = false,
+    this.category = 'other',
+    this.coverImageUrl,
   });
+
+  /// Supabase `groups.id`; null for demo / placeholder rows.
+  final String? id;
+
+  /// Invite code when loaded from API.
+  final String? inviteCode;
+
+  /// Whether the current user is the group owner (`group_members.role`).
+  final bool isOwner;
+
+  /// DB category key: `trip` | `home` | `event` | `other`.
+  final String category;
+
+  /// Optional cover image URL from `groups.cover_image_url`.
+  final String? coverImageUrl;
 
   final String name;
   final int memberCount;
@@ -27,12 +47,18 @@ class GroupSummary {
   /// Prefer passing [memberCount] from a separate aggregate query; embed counts are brittle in PostgREST.
   factory GroupSummary.fromGroupRow(
     Map<String, dynamic> g, {
+    required String memberRole,
     int? memberCount,
   }) {
     final category = g['category'] as String? ?? 'other';
     var n = memberCount ?? _parseEmbedCount(g['group_members']);
     final v = _visualsForCategory(category);
     return GroupSummary(
+      id: g['id']?.toString(),
+      inviteCode: g['invite_code'] as String?,
+      isOwner: memberRole == 'owner',
+      category: category,
+      coverImageUrl: g['cover_image_url'] as String?,
       name: g['name'] as String? ?? 'Group',
       memberCount: n,
       statusLabel: 'Settled',
@@ -41,6 +67,48 @@ class GroupSummary {
       icon: v.icon,
       iconColor: v.iconColor,
       iconTileBackground: v.tileBg,
+    );
+  }
+
+  /// UI label for [category] (settings / identity card).
+  static String categoryLabel(String category) {
+    switch (category) {
+      case 'trip':
+        return 'Travel & Vacation';
+      case 'home':
+        return 'Rent & Utilities';
+      case 'event':
+        return 'Parties & Weddings';
+      default:
+        return 'General expenses';
+    }
+  }
+
+  String get categoryDisplayLabel => categoryLabel(category);
+
+  GroupSummary copyWith({
+    String? name,
+    int? memberCount,
+    String? id,
+    String? inviteCode,
+    bool? isOwner,
+    String? category,
+    String? coverImageUrl,
+  }) {
+    return GroupSummary(
+      name: name ?? this.name,
+      memberCount: memberCount ?? this.memberCount,
+      statusLabel: statusLabel,
+      amountLabel: amountLabel,
+      amountColor: amountColor,
+      icon: icon,
+      iconColor: iconColor,
+      iconTileBackground: iconTileBackground,
+      id: id ?? this.id,
+      inviteCode: inviteCode ?? this.inviteCode,
+      isOwner: isOwner ?? this.isOwner,
+      category: category ?? this.category,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
     );
   }
 

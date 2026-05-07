@@ -24,6 +24,7 @@ class HomeScreen extends StatelessWidget {
       icon: Icons.apartment_rounded,
       iconColor: AppPalette.primary600,
       iconTileBackground: AppPalette.primary100,
+      category: 'home',
     ),
     GroupSummary(
       name: 'Tokyo Trip',
@@ -34,6 +35,7 @@ class HomeScreen extends StatelessWidget {
       icon: Icons.flight_rounded,
       iconColor: const Color(0xFF2563EB),
       iconTileBackground: const Color(0xFFDBEAFE),
+      category: 'trip',
     ),
     GroupSummary(
       name: 'Dinner Club',
@@ -44,6 +46,7 @@ class HomeScreen extends StatelessWidget {
       icon: Icons.restaurant_rounded,
       iconColor: AppPalette.tertiary600,
       iconTileBackground: AppPalette.tertiary100,
+      category: 'event',
     ),
   ];
 

@@ -1,7 +1,20 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:split_spend/src/core/storage/avatar_storage_service.dart';
+import 'package:split_spend/src/features/groups/models/group_member_display.dart';
 import 'package:split_spend/src/features/home/models/group_summary.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Result of [GroupsRepository.joinGroupByInviteCode] (RPC returns JSON).
+class JoinGroupResult {
+  const JoinGroupResult({required this.status, required this.groupId});
+
+  final String status;
+  final String groupId;
+
+  bool get joined => status == 'joined';
+
+  bool get alreadyMember => status == 'already_member';
+}
 
 class GroupsRepository {
   GroupsRepository(this._client);
@@ -21,7 +34,7 @@ class GroupsRepository {
     final membershipRows = await _client
         .from('group_members')
         .select(
-          'group_id, groups(id, name, category, invite_code, cover_image_url, created_at)',
+          'role, group_id, groups(id, name, category, invite_code, cover_image_url, created_at)',
         )
         .eq('user_id', uid);
 
@@ -30,10 +43,14 @@ class GroupsRepository {
     for (final row in list) {
       final map = Map<String, dynamic>.from(row as Map);
       final g = map['groups'];
+      final role = map['role'] as String? ?? 'member';
       if (g is Map<String, dynamic>) {
         final id = g['id']?.toString();
         if (id != null) {
-          byGroupId[id] = Map<String, dynamic>.from(g);
+          byGroupId[id] = {
+            'group': Map<String, dynamic>.from(g),
+            'role': role,
+          };
         }
       }
     }
@@ -59,9 +76,13 @@ class GroupsRepository {
 
     final out = <GroupSummary>[];
     for (final entry in byGroupId.entries) {
+      final bundle = entry.value;
+      final g = bundle['group'] as Map<String, dynamic>;
+      final role = bundle['role'] as String? ?? 'member';
       out.add(
         GroupSummary.fromGroupRow(
-          entry.value,
+          g,
+          memberRole: role,
           memberCount: counts[entry.key] ?? 1,
         ),
       );
@@ -85,19 +106,17 @@ class GroupsRepository {
       throw ArgumentError('Group name is too short.');
     }
 
-    // DB trigger `after_group_created` inserts the owner row into `group_members`.
-    // Do not insert here — duplicate (group_id, user_id) violates PK.
-    final inserted = await _client
-        .from('groups')
-        .insert({
-          'name': trimmed,
-          'created_by': uid,
-          'category': category,
-        })
-        .select('id, invite_code')
-        .single();
-
-    return Map<String, dynamic>.from(inserted);
+    // RPC runs as SECURITY DEFINER so INSERT succeeds even when direct REST inserts
+    // hit confusing client/session + RLS interactions; created_by is set from auth.uid()
+    // inside Postgres only.
+    final raw = await _client.rpc<dynamic>(
+      'create_group',
+      params: {'p_name': trimmed, 'p_category': category},
+    );
+    if (raw is! Map) {
+      throw StateError('Unexpected create_group response');
+    }
+    return Map<String, dynamic>.from(raw);
   }
 
   /// Uploads a group cover to the same public `avatars` bucket under `{userId}/group-covers/{groupId}.*`
@@ -149,14 +168,128 @@ class GroupsRepository {
     return s.toUpperCase();
   }
 
-  Future<void> joinGroupByInviteCode(String rawCode) async {
+  Future<JoinGroupResult> joinGroupByInviteCode(String rawCode) async {
     final code = normalizeInviteCode(rawCode);
     if (code.length < 4) {
       throw ArgumentError('Invite code is too short.');
     }
-    await _client.rpc<void>(
+    final raw = await _client.rpc<dynamic>(
       'join_group_by_invite_code',
       params: {'p_code': code},
     );
+    if (raw is! Map) {
+      throw StateError('Unexpected join_group_by_invite_code response');
+    }
+    final map = Map<String, dynamic>.from(raw);
+    return JoinGroupResult(
+      status: map['status'] as String? ?? '',
+      groupId: map['group_id']?.toString() ?? '',
+    );
+  }
+
+  /// Members of a group (owner first). Requires `profiles_select_same_group_member` RLS.
+  Future<List<GroupMemberDisplay>> fetchGroupMembers(String groupId) async {
+    if (_userId == null) {
+      return [];
+    }
+
+    final membershipRows = await _client
+        .from('group_members')
+        .select('user_id, role')
+        .eq('group_id', groupId);
+
+    final list = membershipRows as List<dynamic>;
+    if (list.isEmpty) {
+      return [];
+    }
+
+    final ids = list
+        .map((r) => Map<String, dynamic>.from(r)['user_id']?.toString())
+        .whereType<String>()
+        .toList();
+
+    final profileRows = ids.isEmpty
+        ? <dynamic>[]
+        : await _client
+              .from('profiles')
+              .select('id, display_name, avatar_url')
+              .inFilter('id', ids);
+
+    final profilesById = <String, Map<String, dynamic>>{};
+    for (final row in profileRows) {
+      final m = Map<String, dynamic>.from(row);
+      final id = m['id']?.toString();
+      if (id != null) {
+        profilesById[id] = m;
+      }
+    }
+
+    final out = <GroupMemberDisplay>[];
+    for (final row in list) {
+      final m = Map<String, dynamic>.from(row);
+      final userId = m['user_id']?.toString();
+      if (userId == null) {
+        continue;
+      }
+      final role = m['role'] as String? ?? 'member';
+      final p = profilesById[userId];
+      out.add(
+        GroupMemberDisplay(
+          userId: userId,
+          role: role,
+          displayName: p?['display_name'] as String?,
+          avatarUrl: p?['avatar_url'] as String?,
+        ),
+      );
+    }
+
+    out.sort((a, b) {
+      if (a.isOwner != b.isOwner) {
+        return a.isOwner ? -1 : 1;
+      }
+      final an =
+          (a.displayName ?? '').toLowerCase();
+      final bn =
+          (b.displayName ?? '').toLowerCase();
+      return an.compareTo(bn);
+    });
+
+    return out;
+  }
+
+  Future<void> removeMember({
+    required String groupId,
+    required String targetUserId,
+  }) async {
+    await _client.from('group_members').delete().match({
+      'group_id': groupId,
+      'user_id': targetUserId,
+    });
+  }
+
+  Future<void> leaveGroup(String groupId) async {
+    final uid = _userId;
+    if (uid == null) {
+      throw StateError('Not signed in.');
+    }
+    await _client.from('group_members').delete().match({
+      'group_id': groupId,
+      'user_id': uid,
+    });
+  }
+
+  Future<void> deleteGroup(String groupId) async {
+    await _client.from('groups').delete().eq('id', groupId);
+  }
+
+  Future<void> updateGroupName({
+    required String groupId,
+    required String name,
+  }) async {
+    final trimmed = name.trim();
+    if (trimmed.length < 2) {
+      throw ArgumentError('Name too short.');
+    }
+    await _client.from('groups').update({'name': trimmed}).eq('id', groupId);
   }
 }

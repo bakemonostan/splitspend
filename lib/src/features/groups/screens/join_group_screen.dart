@@ -45,10 +45,15 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
 
     setState(() => _submitting = true);
     try {
-      await _repo.joinGroupByInviteCode(normalized);
-      if (mounted) {
-        Navigator.of(context).pop(true);
+      final result = await _repo.joinGroupByInviteCode(normalized);
+      if (!mounted) {
+        return;
       }
+      if (result.alreadyMember) {
+        await AppToast.info('You are already in this group');
+        return;
+      }
+      Navigator.of(context).pop(true);
     } catch (e) {
       final msg = e.toString().toLowerCase().contains('invalid')
           ? 'Invalid invite code'

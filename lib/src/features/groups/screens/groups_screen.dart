@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:split_spend/src/core/ui/app_toast.dart';
 import 'package:split_spend/src/features/groups/data/groups_repository.dart';
 import 'package:split_spend/src/features/groups/screens/create_group_screen.dart';
+import 'package:split_spend/src/features/groups/screens/group_settings_screen.dart';
 import 'package:split_spend/src/features/groups/screens/join_group_screen.dart';
 import 'package:split_spend/src/features/groups/widgets/groups_header.dart';
 import 'package:split_spend/src/features/groups/widgets/start_something_new_card.dart';
@@ -147,7 +148,21 @@ class _GroupsScreenState extends State<GroupsScreen> {
         ...groups.map(
           (g) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: GroupSummaryCard(summary: g, onTap: () {}),
+            child: GroupSummaryCard(
+              summary: g,
+              onTap: g.id == null
+                  ? null
+                  : () async {
+                      final changed = await Navigator.of(context).push<bool>(
+                        MaterialPageRoute<bool>(
+                          builder: (_) => GroupSettingsScreen(summary: g),
+                        ),
+                      );
+                      if (changed == true && mounted) {
+                        await _load();
+                      }
+                    },
+            ),
           ),
         ),
         const SizedBox(height: 8),
