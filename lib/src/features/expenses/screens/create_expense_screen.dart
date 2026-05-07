@@ -272,21 +272,44 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TextField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(
-                fontSize: 42,
-                fontWeight: FontWeight.w700,
-                color: AppPalette.neutral500,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppPalette.neutral200),
               ),
-              decoration: _inputDecoration(
-                '0.00',
-                prefix: r'$ ',
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 18,
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  const Text(
+                    r'$',
+                    style: TextStyle(
+                      fontSize: 38,
+                      fontWeight: FontWeight.w700,
+                      color: AppPalette.neutral500,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.w700,
+                        color: AppPalette.neutral500,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: '0.00',
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 18),
@@ -599,17 +622,10 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
 
   InputDecoration _inputDecoration(
     String hint, {
-    String? prefix,
     EdgeInsets? contentPadding,
   }) {
     return InputDecoration(
       hintText: hint,
-      prefixText: prefix,
-      prefixStyle: const TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        color: AppPalette.neutral500,
-      ),
       filled: true,
       fillColor: Colors.white,
       contentPadding:
