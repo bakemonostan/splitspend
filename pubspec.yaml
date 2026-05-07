@@ -34,3 +34,4 @@ flutter:
     - assets/img/onboarding/page_one.png
     - assets/img/onboarding/page_two.png
     - assets/img/onboarding/page_three.png
+    - assets/config/supabase.local.json

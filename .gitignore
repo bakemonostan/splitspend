@@ -50,3 +50,4 @@ app.*.map.json
 !.env.example
 secrets.json
 dart_defines.local.json
+assets/config/supabase.local.json
